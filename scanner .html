@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student QR Scanner</title>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 30px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    #reader {
+      width: 350px;
+      max-width: 95%;
+      margin: 20px auto;
+    }
+
+    #result {
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Student QR Scanner</h1>
+
+  <div id="reader"></div>
+
+  <div id="result">
+    📷 Camera starting...
+  </div>
+
+  <script>
+
+    let scanner;
+
+    function startScanner() {
+
+      scanner = new Html5Qrcode("reader");
+
+      scanner.start(
+
+        { facingMode: "environment" },
+
+        {
+          fps: 10,
+          qrbox: 250
+        },
+
+        function(decodedText) {
+
+          document.getElementById("result").innerText =
+            "QR Found: " + decodedText;
+
+          scanner.stop().then(function() {
+
+            // Send QR ID back to Apps Script page
+            if (window.opener) {
+
+              window.opener.postMessage(
+                {
+                  type: "attendanceQR",
+                  qrId: decodedText
+                },
+                "*"
+              );
+
+              document.getElementById("result").innerText =
+                "✅ QR sent successfully";
+
+            } else {
+
+              document.getElementById("result").innerText =
+                "❌ Attendance System window not found";
+
+            }
+
+          });
+
+        },
+
+        function(errorMessage) {
+          // QR not found yet
+        }
+
+      ).catch(function(error) {
+
+        document.getElementById("result").innerText =
+          "❌ Camera error: " + error;
+
+      });
+
+    }
+
+    startScanner();
+
+  </script>
+
+</body>
+</html>
